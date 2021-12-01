@@ -3,14 +3,12 @@ package ru.netology.card;
 import com.codeborne.selenide.SelenideElement;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.openqa.selenium.Keys;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
-import static com.codeborne.selenide.Condition.exactText;
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selenide.$;
@@ -26,15 +24,19 @@ public class CardDeliveryTest {
     void shouldSubmitRequest() {
         SelenideElement form = $("form");
         form.$("[data-test-id=city] input").setValue("Ханты-Мансийск");
-        Calendar cal = new GregorianCalendar();
-        cal.roll(Calendar.DATE, 3);
-        DateFormat df = new SimpleDateFormat("dd.MM.yyyy");
-        String date = df.format(cal.getTime());
+        LocalDate local = LocalDate.now();
+        local = local.plusDays(4);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+        String date = local.format(formatter);
+        System.out.println(date);
+        form.$("[data-test-id=date] input").doubleClick();
+        form.$("[data-test-id=date] input").sendKeys(Keys.BACK_SPACE);
         form.$("[data-test-id=date] input").setValue(date);
         form.$("[data-test-id=name] input").setValue("Яковлева Анна");
         form.$("[data-test-id=phone] input").setValue("+79270000000");
         form.$("[data-test-id=agreement]").click();
         form.$(byText("Забронировать")).click();
         $("[data-test-id=notification] .notification__title").shouldHave(text("Успешно!"), Duration.ofSeconds(15));
+        $("[data-test-id=notification] .notification__content").shouldHave(text(date));
     }
 }
